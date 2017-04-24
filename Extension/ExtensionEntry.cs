@@ -23,10 +23,14 @@ namespace dkab.Extension
 
         public ExtensionEntry()
         {
+            
+        }
+        public void Connect(string username, string password)
+        {
+            GameClient = new GameClient();
             thread = new Thread(() =>
-            {
-                GameClient = new GameClient();
-                bool suc = GameClient.Login("judgeGC", "LoadLibrary");
+            {              
+                bool suc = GameClient.Login(username, password);
             });
             thread.Start();
         }

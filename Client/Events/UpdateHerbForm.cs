@@ -9,7 +9,7 @@ namespace dkab.Client.Events
     enum UpdateHerbForm
     {
         SPAWN,
-        RISE,
+        GROWTH,
         REMOVE
     }
 }

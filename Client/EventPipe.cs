@@ -12,94 +12,107 @@ namespace dkab.Client
         private HashSet<uint> presentedFauna;
         private HashSet<uint> presentedFlora;
 
-        private bool clearEvents = false;
-        private List<string> events;
+        private Queue<string> events;
 
-        public EventPipe()
+        /// <summary>Affect on how many bytes PopAll method returns</summary>
+        public uint MaxResponseSize { get; set; }
+
+        /// <param name = "maxResponseSize" > Arma 3 limited size up to 10kB</param>
+        public EventPipe(uint maxResponseSize = 4000)
         {
             presentedUnits = new HashSet<string>();
             presentedFauna = new HashSet<uint>();
             presentedFlora = new HashSet<uint>();
-            events = new List<string>();
+            events = new Queue<string>();
+
+            MaxResponseSize = maxResponseSize;
         }
 
-        private void ClearEvents()
-        {
-            if (clearEvents)
-            {
-                events.Clear();
-                clearEvents = false;
-            }
-        }
         public void Push(InPacket packet)
         {
-            ClearEvents();
-
+            #region Playable unit events
             if (packet is ReceiveDestination)
             {
                 ReceiveDestination pos = packet as ReceiveDestination;
 
-                if(presentedUnits.Contains(pos.Name))
+                if (presentedUnits.Contains(pos.Name))
                 {
-                    events.Add(PacketConverter.ReceiveDestination(pos, ReceiveDestinationForm.MOVE));
+                    events.Enqueue(PacketConverter.ReceiveDestination(pos, ReceiveDestinationForm.MOVE));
                 }
                 else
                 {
                     presentedUnits.Add(pos.Name);
-                    events.Add(PacketConverter.ReceiveDestination(pos, ReceiveDestinationForm.SPAWN));
+                    events.Enqueue(PacketConverter.ReceiveDestination(pos, ReceiveDestinationForm.SPAWN));
                 }
             }
-            else if(packet is LeaveMessage)
+            else if (packet is LeaveMessage)
             {
                 LeaveMessage lev = packet as LeaveMessage;
 
                 presentedUnits.Remove(lev.Name);
-                events.Add(lev.ToString());
+                events.Enqueue(lev.ToString());
             }
-            else if(packet is UpdateMonster)
+            #endregion
+            #region Fauna events
+            else if (packet is UpdateMonster)
             {
                 UpdateMonster monster = packet as UpdateMonster;
-                Console.WriteLine(monster.ToString());
 
-                if(presentedFauna.Contains(monster.Id))
+                if (presentedFauna.Contains(monster.Id))
                 {
-                    events.Add(PacketConverter.UpdateMonster(monster, UpdateMonsterForm.MOVE));
+                    events.Enqueue(PacketConverter.UpdateMonster(monster, UpdateMonsterForm.MOVE));
                 }
                 else
                 {
                     presentedFauna.Add(monster.Id);
-                    events.Add(PacketConverter.UpdateMonster(monster, UpdateMonsterForm.SPAWN));
+                    events.Enqueue(PacketConverter.UpdateMonster(monster, UpdateMonsterForm.SPAWN));
                 }
             }
-            else if(packet is UpdateHerb)
+            #endregion
+            #region Flora events
+            else if (packet is UpdateHerb)
             {
                 UpdateHerb herb = packet as UpdateHerb;
 
                 if (presentedFauna.Contains(herb.Id))
                 {
-                    if(herb.State == 0)
+                    if (herb.State == 0)
                     {
-                        events.Add(PacketConverter.UpdateHerb(herb, UpdateHerbForm.REMOVE));
+                        events.Enqueue(PacketConverter.UpdateHerb(herb, UpdateHerbForm.REMOVE));
                     }
                     else
                     {
-                        events.Add(PacketConverter.UpdateHerb(herb, UpdateHerbForm.RISE));
+                        events.Enqueue(PacketConverter.UpdateHerb(herb, UpdateHerbForm.GROWTH));
                     }
-                    
+
                 }
                 else
                 {
                     presentedFlora.Add(herb.Id);
-                    events.Add(PacketConverter.UpdateHerb(herb, UpdateHerbForm.SPAWN));
+                    events.Enqueue(PacketConverter.UpdateHerb(herb, UpdateHerbForm.SPAWN));
                 }
             }
+            #endregion
         }
 
-        public List<string> PopAll()
+        public Queue<string> PopAll()
         {
-            ClearEvents();
-            clearEvents = true;
-            return events;
+            int currentSize = 0;
+            Queue<string> result = new Queue<string>();
+
+            if (events.Count == 0)
+                return result;
+
+            do
+            {
+                string e = events.Dequeue();
+                currentSize += e.Length;
+
+                result.Enqueue(e);
+
+            } while (events.Count > 0 && currentSize + events.Peek().Length < MaxResponseSize);
+
+            return result;
         }
 
         public void Reset()

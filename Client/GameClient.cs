@@ -24,12 +24,22 @@ namespace dkab.Client
             }
         }
 
+        public bool IsConnected
+        {
+            get
+            {
+                return socket?.Connected ?? false;
+            }
+        }
+
         private string username;
 
         public GameClient()
         {
             events = new EventPipe();
         }
+
+        private bool needDisconnect = false;
 
         public bool Login(string username, string password)
         {
@@ -56,7 +66,7 @@ namespace dkab.Client
 
 
                 PacketParser parser = new PacketParser();
-                while (true)
+                while (!needDisconnect)
                 {
                     try
                     {
@@ -92,18 +102,24 @@ namespace dkab.Client
                             Ping();
                         }
                     }
-                    catch (IOException)
+                    catch (IOException)//throwed, when after 5 seconds has no data
                     {
                         Ping();
                     }                 
                 }
+
+                socket.Close();
+                needDisconnect = false;
             }
             catch(Exception ex)
             {
                 Logger.StackTrace(ex);
             }
         }
-
+        public void Disconnect()
+        {
+            needDisconnect = true;
+        }
         private void Ping()
         {
             new Ping(socket.GetStream()).Send();

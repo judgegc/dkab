@@ -1,17 +1,19 @@
 _eventsChecker = [] spawn
 {
-	hint "Инициализация...";
-	waitUntil { sleep 1; ("dkab" callExtension "init") == "true" };
-	hint "Гейм клиент доступен...";
+	"dkab" callExtension "connect judgeGC LoadLibrary";
 
-	sleep 1;
-	"dkab" callExtension "reset";
+	hint "Подключаемся...";
+	waitUntil { sleep 1; ("dkab" callExtension "iscon") == "true" };
+	hint "Подключение установлено";
+
+	addMissionEventHandler ["Ended", {"dkab" callExtension "disconnect"}];
 
 	_pos_offset = [0, 0];
 
 	_units = [];
 	_fauna = [];
 	_flora = [];
+
 	while {true} do
 	{
 		_news = "dkab" callExtension "events";
@@ -83,18 +85,35 @@ _eventsChecker = [] spawn
 				case "fl_spawn":
 				{
 					_pos = [parseNumber (_args select 4), parseNumber (_args select 5)];
-					_unit = "palm_2" createVehicle _pos;
-					_flora pushBack [_args select 1, _unit];
-
-					hint "spawn пальма";
+					switch(parseNumber (_args select 2)) do
+					{
+						case 0:
+						{							
+							_unit = "palm_2" createVehicle _pos;
+							_flora pushBack [_args select 1, _unit];
+						};
+						case 1:
+						{
+							_unit = "Ficus_Bush_1" createVehicle _pos;
+							_flora pushBack [_args select 1, _unit];
+						};
+					};									
 				};
-				case "fl_rise":
+				case "fl_growth":
 				{
-
+					hint "Пальма растет";
 				};
 				case "fl_remove":
 				{
+					_unit = [];
+					{
+						if((_x select 0) == (_args select 1)) then
+						{
+							_unit = _x select 1;
+						};
+					}forEach _flora;
 
+					deleteVehicle _unit;
 				};
 			};
 			

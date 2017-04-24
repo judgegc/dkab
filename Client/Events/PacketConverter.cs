@@ -42,8 +42,8 @@ namespace dkab.Client.Events
                 case UpdateHerbForm.SPAWN:
                     args[0] = "fl_spawn";
                     break;
-                case UpdateHerbForm.RISE:
-                    args[0] = "fl_rise";
+                case UpdateHerbForm.GROWTH:
+                    args[0] = "fl_growth";
                     break;
                 case UpdateHerbForm.REMOVE:
                     args[0] = "fl_remove";

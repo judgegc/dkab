@@ -35,6 +35,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -77,12 +78,14 @@
     <Compile Include="Client\PacketParser.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="Extension\CommandName.cs" />
+    <Compile Include="Extension\Commands\Connect.cs" />
+    <Compile Include="Extension\Commands\Disconnect.cs" />
     <Compile Include="Extension\Commands\MyDestination.cs" />
     <Compile Include="Extension\Commands\PullEvents.cs" />
-    <Compile Include="Extension\Commands\Reset.cs" />
+    <Compile Include="Extension\Commands\Version.cs" />
     <Compile Include="Extension\ICommand.cs" />
     <Compile Include="Extension\CommandsProcessor.cs" />
-    <Compile Include="Extension\Commands\Init.cs" />
+    <Compile Include="Extension\Commands\ConnectionChecking.cs" />
     <Compile Include="Extension\ExtensionEntry.cs" />
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\NetworkStreamOperations.cs" />

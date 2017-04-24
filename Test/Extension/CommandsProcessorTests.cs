@@ -12,8 +12,6 @@ namespace dkab.Extension.Tests
         {
             CommandsProcessor cp = new CommandsProcessor();
 
-            Assert.IsInstanceOfType(cp.Parse("init"), typeof(Init));
-            Assert.IsInstanceOfType(cp.Parse("reset"), typeof(Reset));
             Assert.IsInstanceOfType(cp.Parse("events"), typeof(PullEvents));
             Assert.IsInstanceOfType(cp.Parse("mypos 0 0"), typeof(MyDestination));
 
