@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace dkab.Client
 {
+    /// <summary>Converts game packet to events. Batching delivery</summary>
     class EventPipe
     {
         private HashSet<string> presentedUnits;
@@ -95,7 +96,7 @@ namespace dkab.Client
             #endregion
         }
 
-        public Queue<string> PopAll()
+        public Queue<string> Pop()
         {
             int currentSize = 0;
             Queue<string> result = new Queue<string>();
@@ -113,15 +114,6 @@ namespace dkab.Client
             } while (events.Count > 0 && currentSize + events.Peek().Length < MaxResponseSize);
 
             return result;
-        }
-
-        public void Reset()
-        {
-            presentedUnits.Clear();
-            presentedFauna.Clear();
-            presentedFlora.Clear();
-
-            events.Clear();
         }
     }
 }

@@ -10,9 +10,19 @@ _eventsChecker = [] spawn
 
 	_pos_offset = [0, 0];
 
-	_units = [];
+	myAllPlayers = [];
 	_fauna = [];
 	_flora = [];
+
+	addMissionEventHandler ["Draw3D", 
+	{
+		{
+			_iconPos = position (_x select 1);
+			_iconPos set [2, (_iconPos select 2) + 2];
+			drawIcon3D ["", [0.22, 0.23, 0.26, 1], _iconPos, 0, 0, 0, _x select 0, 1, 0.05, "PuristaMedium"];
+		} forEach myAllPlayers;
+						
+	}];
 
 	while {true} do
 	{
@@ -30,7 +40,8 @@ _eventsChecker = [] spawn
 					_unit = createAgent ["B_Soldier_F", _pos, [], 0, "FORM"];
 					_unit disableAI "FSM";
 					_unit setBehaviour "CARELESS";
-					_units pushBack [_args select 1, _unit];
+					_unit allowDamage false;
+					myAllPlayers pushBack [_args select 1, _unit];
 				};
     			case "move": 
 				{
@@ -40,7 +51,7 @@ _eventsChecker = [] spawn
 						{
 							_unit = _x select 1;
 						};
-					}forEach _units;
+					}forEach myAllPlayers;
 
 
 					_pos = [parseNumber (_args select 2) + (_pos_offset select 0), parseNumber (_args select 3) + (_pos_offset select 1)];
@@ -48,15 +59,21 @@ _eventsChecker = [] spawn
 				};
 				case "delpos":
 				{
-					_unit = [];
+					_exit = false;
+					_count = count myAllPlayers;
+					for [{_i = 0},{_i < _count && !_exit},{_i = _i + 1}] do 
 					{
-						if((_x select 0) == (_args select 1)) then
+						_current = myAllPlayers select _i;
+						if((_current select 0) == (_args select 1)) then
 						{
-							_unit = _x select 1;
+							_unit = _current select 1;
+							
+							deleteVehicle _unit;
+							myAllPlayers set [_i,-1];
+							myAllPlayers = myAllPlayers - [-1];
+							_exit = true;
 						};
-					}forEach _units;
-
-					deleteVehicle _unit;
+					};				
 				};
 				case "fa_spawn":
 				{
@@ -65,6 +82,7 @@ _eventsChecker = [] spawn
 					_unit disableAI "FSM";
 					_unit setBehaviour "CARELESS";
 					_unit setUnitPos "DOWN";
+					_unit allowDamage false;
 
 					_fauna pushBack [_args select 1, _unit];
 				};
@@ -78,6 +96,33 @@ _eventsChecker = [] spawn
 						};
 					}forEach _fauna;
 
+					switch(parseNumber (_args select 6)) do
+					{
+						case 0:
+						{
+							_uniform = "U_B_Protagonist_VR";
+							if(uniform _unit != _uniform) then
+							{
+								_unit forceAddUniform _uniform;
+							};							
+						};
+						case 1:
+						{
+							_uniform = "U_O_Protagonist_VR";
+							if(uniform _unit != _uniform) then
+							{
+								_unit forceAddUniform _uniform;
+							};
+						};
+						case 2:
+						{
+							_uniform = "U_I_Protagonist_VR";
+							if(uniform _unit != _uniform) then
+							{
+								_unit forceAddUniform _uniform;
+							};
+						};
+					};
 
 					_pos = [parseNumber (_args select 4) + (_pos_offset select 0), parseNumber (_args select 5) + (_pos_offset select 1)];
 					_unit moveTo (_pos);
@@ -88,13 +133,31 @@ _eventsChecker = [] spawn
 					switch(parseNumber (_args select 2)) do
 					{
 						case 0:
-						{							
-							_unit = "palm_2" createVehicle _pos;
-							_flora pushBack [_args select 1, _unit];
+						{	
+							_level = parseNumber(_args select 3);
+							if(1 <= _level && _level <= 3) then
+							{
+								_unit = "Pine_1" createVehicle _pos;
+								_flora pushBack [_args select 1, _unit];
+							} 
+							else
+							{
+								if (4 < _level && _level <= 6) then
+								{
+									_unit = "Pine_3" createVehicle _pos;
+									_flora pushBack [_args select 1, _unit];
+								}
+								else
+								{
+									_unit = "Pine_2" createVehicle _pos;
+									_flora pushBack [_args select 1, _unit];
+								};
+							};
+							
 						};
 						case 1:
 						{
-							_unit = "Ficus_Bush_1" createVehicle _pos;
+							_unit = "Flower_Cakile" createVehicle _pos;
 							_flora pushBack [_args select 1, _unit];
 						};
 					};									

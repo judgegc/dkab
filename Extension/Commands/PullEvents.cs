@@ -5,7 +5,7 @@
     {
         public string exec()
         {
-            return string.Join("|", ExtensionEntry.Instance.GameClient.Events.PopAll());
+            return string.Join("|", ExtensionEntry.Instance.GameClient.Events.Pop());
         }
     }
 }

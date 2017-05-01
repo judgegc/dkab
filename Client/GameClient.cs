@@ -8,13 +8,10 @@ using System.IO;
 
 namespace dkab.Client
 {
+    /// <summary>Interacted with game server.</summary>
     class GameClient
     {     
-        public uint ClientId { get; private set; }
-
-        private TcpClient socket;
-
-        public EventPipe events;
+        
 
         public EventPipe Events
         {
@@ -23,25 +20,25 @@ namespace dkab.Client
                 return events;
             }
         }
-
         public bool IsConnected
         {
             get
             {
                 return socket?.Connected ?? false;
             }
-        }
+        }           
+        public uint ClientId { get; private set; }
 
+        private TcpClient socket;
         private string username;
+        private EventPipe events;     
+        private bool needDisconnect = false;
 
         public GameClient()
         {
             events = new EventPipe();
         }
-
-        private bool needDisconnect = false;
-
-        public bool Login(string username, string password)
+        public bool Login(string username, string passwo rd)
         {
             this.username = username;
             GameSession s = new GameSession();
@@ -55,7 +52,6 @@ namespace dkab.Client
           
             return false;
         }
-
         private void EnterGame()
         {
             try
